@@ -21,7 +21,7 @@ public class PlayerInput : MonoBehaviour
     {
         rb= GetComponent<Rigidbody>();
     }
-    void Update()
+    void FixedUpdate()
     {
         if(Input.GetKeyDown(KeyCode.W))
         {
@@ -34,36 +34,32 @@ public class PlayerInput : MonoBehaviour
         }
         else if(Input.GetKey(KeyCode.W))
         {
-            transform.DOMoveZ(transform.position.z + 2f, 1);
-            transform.DOLocalRotate(new Vector3(transform.localRotation.x, 0, transform.localRotation.z), 0);
+            Acceleration();
 
-                if (Input.GetKey(KeyCode.A) && !LimittedByLeftSide)
-                {
-                    transform.DOMoveX(transform.position.x - 1f, 1);
-                    carBody.transform.DOLocalRotate(new Vector3(0, -10, 0), 0.5f);
-                    StartCoroutine(RotationReseterEnum());
+            if (Input.GetKey(KeyCode.A) && !LimittedByLeftSide)
+            {
+                LeftTurn();
 
-                }
-                else if (Input.GetKeyUp(KeyCode.A))
-                {
-                    StartCoroutine(RotationReseterEnum());
-                }
-                if (Input.GetKey(KeyCode.D) && !LimittedByRightSide)
-                {
-                    transform.DOMoveX(transform.position.x + 1f, 1);
-                    carBody.transform.DOLocalRotate(new Vector3(0, 10, 0), 0.5f);
-                    StartCoroutine(RotationReseterEnum());
-                }
-                else if (Input.GetKeyUp(KeyCode.D))
-                {
-                    StartCoroutine(RotationReseterEnum());
-                }
+            }
+            else if (Input.GetKeyUp(KeyCode.A))
+            {
+                LeftTurnEnd();
+                StartCoroutine(RotationReseterEnum());
+            }
+            if (Input.GetKey(KeyCode.D) && !LimittedByRightSide)
+            {
+                RightTurn();
+            }
+            else if (Input.GetKeyUp(KeyCode.D))
+            {
+                RightTurnEnd();
+                StartCoroutine(RotationReseterEnum());
+            }
             
         }
         else if (Input.GetKeyUp(KeyCode.W))
         {
-            StartCoroutine(RotationReseterEnum());
-            StartCoroutine(killTweenerEnum());
+            Brake();
         }
         if(transform.position.x <= -8 )
         {
@@ -83,6 +79,33 @@ public class PlayerInput : MonoBehaviour
         {
             LimittedByRightSide = false;
         }
+
+        if (forwardIsPressed)
+        {
+            transform.DOMoveZ(transform.position.z + 4f, 1).SetEase(Ease.Linear);
+        }
+
+
+        if (rightBtnPressed)
+        {
+            LeftBtnPressed = false;
+            print("right checked");
+            transform.DOMoveX(transform.position.x + 1f, 1);
+            carBody.transform.DOLocalRotate(new Vector3(0, 10, 0), 0.5f);
+            StartCoroutine(RotationReseterEnum());
+        }
+        if (LeftBtnPressed)
+        {
+            rightBtnPressed = false;
+            transform.DOMoveX(transform.position.x - 1f, 1);
+            carBody.transform.DOLocalRotate(new Vector3(0, -10, 0), 0.5f);
+            StartCoroutine(RotationReseterEnum());
+        }
+    }
+
+    public void ResetRotation()
+    {
+        StartCoroutine(RotationReseterEnum());
     }
     IEnumerator RotationReseterEnum()
     {
@@ -93,6 +116,51 @@ public class PlayerInput : MonoBehaviour
     {
         yield return new WaitForSeconds(1);
         transform.DOKill();
-
     }
+
+
+    bool forwardIsPressed = false;
+    public void Acceleration()
+    {
+        if (CameraFollow.instance.camReachedtoPos == false)
+        {
+            CameraFollow.instance.camReachedtoPos = true;
+            canStartEngine = true;
+        }
+        forwardIsPressed = true;
+        //transform.DOLocalRotate(new Vector3(transform.localRotation.x, 0, transform.localRotation.z), 0);
+    }
+
+    public void Brake() 
+    {
+        forwardIsPressed = false;
+        StartCoroutine(RotationReseterEnum());
+        StartCoroutine(killTweenerEnum());
+    }
+    bool LeftBtnPressed = false;
+
+    public void LeftTurn()
+    {
+        if (forwardIsPressed)
+        {
+            LeftBtnPressed = true;
+        }
+    }
+    public void LeftTurnEnd()
+    {
+        LeftBtnPressed = false;
+    }
+    bool rightBtnPressed = false;
+    public void RightTurn()
+    {
+        if (forwardIsPressed)
+        {
+            rightBtnPressed = true;
+        }
+    }
+    public void RightTurnEnd()
+    {
+        rightBtnPressed = false;
+    }
+  
 }

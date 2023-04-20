@@ -24,6 +24,13 @@ public class GameManager : MonoBehaviour
             Destroy(this);
         }
     }
+    private void Update()
+    {
+        if(Input.GetKeyDown(KeyCode.Escape))
+        {
+            Application.Quit();
+        }
+    }
     public void PoolRoad()
     {
         ObjectPooler.instance.SpawnFromPool("Roads", new Vector3(baseRoad.transform.position.x,
